@@ -1,0 +1,30 @@
+# Alloy 🦀
+
+Alloy is a high-performance, data-driven audio engine and music player built from the ground up using **Rust**. This project is an open-source initiative focused on raw systems control, efficient memory management, and intelligent audio analysis.
+
+## 🚀 Vision
+The goal of Alloy is to move away from "pre-packaged" solutions and build a specialized audio system that gives developers and users deep control over their music library. By combining **Systems Programming (Rust)** with **Data Science**, Alloy aims to provide an intelligent listening experience through advanced audio feature extraction.
+
+## 🛠 Features (In Development)
+- **Custom Audio Engine:** Built in Rust for near-zero latency.
+- **Data-Driven Analysis:** Integrated scripts for BPM, mood, and metadata extraction.
+- **CLI Focused:** Designed for developers who love the terminal environment.
+- **Open Source:** Built by a global independent team.
+
+## 📁 Project Structure
+- `src/engine/`: The core audio logic and playback systems.
+- `src/data_models/`: Rust definitions for music and metadata structures.
+- `scripts/`: Data science tools for audio analysis (Python).
+- `data/`: Raw audio and JSON metadata storage.
+
+## 💻 Tech Stack
+- **Language:** Rust 🦀
+- **OS:** Linux (Optimized for Linux Mint XFCE)
+- **Tools:** Git, Cargo, VSCodium
+- **Data Science:** Python (Librosa/Essentia)
+
+## 🤝 Collaboration
+Alloy is an open-source project. We believe in "Code speaks louder than bureaucracy." If you want to contribute, feel free to open a **Pull Request** or an **Issue**.
+
+---
+*Built with passion by an independent global team.*
