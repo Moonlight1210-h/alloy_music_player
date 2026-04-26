@@ -1,9 +1,6 @@
-pub struct song {
+ pub struct Song {
     pub title: String,
-    pub artist:  String,
-    pub path:  String,
-
-    // this is for the Data sicnece 
-    // pub pbm: f32,
-    //pub mood: string,
+    pub artist: String,
+    pub duration_secs: u32,
+    pub path: String,
 }
