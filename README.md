@@ -27,4 +27,31 @@ The goal of Alloy is to move away from "pre-packaged" solutions and build a spec
 Alloy is an open-source project. We believe in "Code speaks louder than bureaucracy." If you want to contribute, feel free to open a **Pull Request** or an **Issue**.
 
 ---
-*Built with passion by an independent global team.*
+*Built with passion by a single developer *
+## 🗺 Roadmap
+
+### v0.1 — Foundation (Current)
+- [x] Basic audio playback engine
+- [x] CLI interface
+- [x] Data models for songs/metadata
+- [ ] TUI player interface (ratatui)
+
+### v0.2 — Core Features
+- [ ] Playlist management
+- [ ] Shuffle / Repeat modes
+- [ ] Volume control
+- [ ] Keyboard shortcuts
+
+### v0.3 — Data & Analysis
+- [ ] BPM detection (Python/Librosa)
+- [ ] Mood analysis
+- [ ] Auto-tagging from audio features
+
+### v0.4 — Polish
+- [ ] Config file support (~/.config/alloy)
+- [ ] Multiple audio format support
+- [ ] Performance benchmarks
+
+### Future Vision
+- [ ] Music recommendation engine
+- [ ] Network streaming support
