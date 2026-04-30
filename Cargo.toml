@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 rodio = "0.17"
+id3 = "1.0"

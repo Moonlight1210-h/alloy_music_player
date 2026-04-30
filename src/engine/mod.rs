@@ -1,3 +1,4 @@
-// داخل src/engine/mod.rs
 pub mod playlist;
+pub mod loader;
+pub mod audio;
  
