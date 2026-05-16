@@ -9,7 +9,12 @@ pub fn load_song(path: String) -> Result<Song, String> {
     match tag {
         Ok(t) => {
             return Ok(Song {
-                title:        t.title().unwrap_or("unknown").to_string(),
+                title: t.title().unwrap_or(
+    std::path::Path::new(&path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("unknown")
+).to_string(),
                 artist:       t.artist().unwrap_or("unknown").to_string(),
                 duration_sec: 0,
                 path:         path,

@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 
 pub fn play_song(song: Song) -> Result<(Arc<Mutex<Sink>>, OutputStream), String> {
     // 1. شغّل جهاز الصوت
-    let (_stream, handle) = OutputStream::try_default()
+    let (stream, handle) = OutputStream::try_default()
         .map_err(|e| e.to_string())?;
     
     // 2. افتح الملف
@@ -20,6 +20,6 @@ sink.append(source);
  
 
 let sink = Arc::new(Mutex::new(sink));
-Ok((sink,_stream))
+Ok((sink,stream))
     
 }

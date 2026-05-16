@@ -7,7 +7,7 @@ use crate::engine::loader::scan_folder;
 
 use crate::engine::audio::play_song;
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
  
 
 fn main(){
@@ -52,8 +52,16 @@ loop {
         "p" => sink.lock().unwrap().pause(),
         "r" => sink.lock().unwrap().play(),
         "q" => {println!("Bye!");break},
-        _   => println!("أمر غير معروف"),
+        "v"=>{println!("enter vol level level:  ");
+    let mut vol = String::new();
+    std::io::stdin().read_line(&mut vol).unwrap();
+    match vol.trim().parse::<f32>(){
+    Ok(v)=> sink.lock().unwrap().set_volume(v) ,
+     Err(_) => println!("invalid vol level"),
+}}
+        _   => println!("invalid order!"),
     }
+    
 }
  
 }
