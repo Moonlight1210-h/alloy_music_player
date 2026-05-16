@@ -9,6 +9,40 @@ use crate::engine::audio::play_song;
 
 use std::sync::Arc;
  
+fn clear_screen() {
+    print!("\x1B[2J\x1B[1;1H");
+}
+
+fn print_now_playing(title: &str, volume: f32) {
+    clear_screen();
+    
+    let bars = ["▁","▂","▃","▄","▅","▆","▇","█"];
+    let wave: Vec<&str> = vec![
+        bars[0], bars[2], bars[4], bars[6], bars[7],
+        bars[5], bars[3], bars[1], bars[0], bars[2],
+        bars[5], bars[7], bars[6], bars[3], bars[1],
+    ];
+ 
+    println!("\n");
+    println!("  ╔══════════════════════════════════════╗");
+    println!("  ║       🎵  A L L O Y  P L A Y E R    ║");
+    println!("  ╠══════════════════════════════════════╣");
+    println!("  ║                                      ║");
+    println!("  ║   ♪  {:<34}║", title);
+    println!("  ║                                      ║");
+    println!("  ║   {}  ║", wave.join(" "));
+    println!("  ║                                      ║");
+    println!("  ║   VOL: [{:<20}] {:.0}%  ║", 
+        "█".repeat((volume * 20.0) as usize),
+        volume * 100.0
+    );
+    println!("  ║                                      ║");
+    println!("  ╠══════════════════════════════════════╣");
+    println!("  ║  p=pause  r=resume  v=vol  q=quit   ║");
+    println!("  ╚══════════════════════════════════════╝");
+    println!("\n  > ");
+}
+
 
 fn main(){
 println!("Wellcome to Alloy music Player 🎵");
@@ -34,11 +68,13 @@ let index: usize = match input.trim().parse(){
 };
 
 let song = songs[index - 1].clone();
+let title = song.title.clone();
 
 // شغّل الأغنية واحصل على sink
 let (sink, _stream) = play_song(song).unwrap();
 let sink_clone = Arc::clone(&sink);
-
+let mut current_volume = 0.5f32;
+print_now_playing(&title, current_volume);
 // thread يشغل الأغنية
 std::thread::spawn(move || {
     sink_clone.lock().unwrap().sleep_until_end();
@@ -49,22 +85,31 @@ loop {
     let mut cmd = String::new();
     std::io::stdin().read_line(&mut cmd).unwrap();
     match cmd.trim() {
-        "p" => sink.lock().unwrap().pause(),
-        "r" => sink.lock().unwrap().play(),
+        "p" =>  {sink.lock().unwrap().pause();
+    print_now_playing(&title, current_volume);},
+
+        "r" =>{sink.lock().unwrap().play();  
+    print_now_playing(&title, current_volume);},
+
         "q" => {println!("Bye!");break},
-        "v"=>{println!("enter vol level level:  ");
-    let mut vol = String::new();
+
+        "v"=>{let mut vol = String::new();
     std::io::stdin().read_line(&mut vol).unwrap();
-    match vol.trim().parse::<f32>(){
-    Ok(v)=> sink.lock().unwrap().set_volume(v) ,
-     Err(_) => println!("invalid vol level"),
-}}
-        _   => println!("invalid order!"),
+    if let Ok(v) = vol.trim().parse::<f32>() {
+        current_volume = v;
+        sink.lock().unwrap().set_volume(v);
+        print_now_playing(&title, current_volume);} },
+
+   
+
+        _=> println!("invalid order!"),
     }
+}
+}
     
-}
+
  
-}
+
  
 
 
