@@ -2,8 +2,9 @@
 use std::fs::File;
 use std::io::BufReader;
 use crate::data_models::song::Song;
+use std::sync::{Arc, Mutex};
 
-pub fn play_song(song: Song) -> Result<(Sink, rodio::OutputStream), String> {
+pub fn play_song(song: Song) -> Result<(Arc<Mutex<Sink>>, OutputStream), String> {
     // 1. شغّل جهاز الصوت
     let (_stream, handle) = OutputStream::try_default()
         .map_err(|e| e.to_string())?;
@@ -18,7 +19,7 @@ let source = Decoder::new(buf).map_err(|e| e.to_string())?;
 sink.append(source);
  
 
-Ok((sink, _stream))
-    
+let sink = Arc::new(Mutex::new(sink));
+Ok((sink,_stream))
     
 }

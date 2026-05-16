@@ -6,8 +6,7 @@ pub struct PlayList{
     pub name: String,
    pub songs: Vec<Song>,
     pub path: String,
-// داله تضيف اغنيه الى قائمه التشغيل
-
+ 
 }
 
 
@@ -21,16 +20,11 @@ impl PlayList{
 
     // داله تبحث عن اغنيه
 
-   pub fn find_song(& self,title:String) -> Option<String> {
-    for s in &self.songs{
-        if s.title == title {
-           return Some(s.title.clone());
+   pub fn find_song(& self,title:&str) -> Option<&Song> {
+    self.songs.iter().find(|s| s.title ==title)
         }
-    }None
 
-   }
-
-}
+    }
 
  
 

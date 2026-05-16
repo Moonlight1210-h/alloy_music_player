@@ -6,10 +6,12 @@ pub mod engine;
 use crate::engine::loader::scan_folder;
 
 use crate::engine::audio::play_song;
+
+use std::sync::{Arc, Mutex};
  
 
 fn main(){
-
+println!("Wellcome to Alloy music Player 🎵");
 
 // 1. اقرأ الأغاني
 let songs = scan_folder("data/").unwrap();
@@ -23,18 +25,37 @@ for (i, song) in songs.iter().enumerate() {
 let mut input = String::new();
 std::io::stdin().read_line(&mut input).unwrap();
 
-let index: usize = input.trim().parse().unwrap();
-match play_song(songs[index - 1].clone()) {
-    Ok((sink, _stream)) => {
-        println!("🎵 يشغل — اكتب رقم الصوت (0.0 - 1.0):");
-        let mut vol = String::new();
-        std::io::stdin().read_line(&mut vol).unwrap();
-        let volume: f32 = vol.trim().parse().unwrap();
-        sink.set_volume(volume);
-        sink.sleep_until_end();
+let index: usize = match input.trim().parse(){
+    Ok(n) if n > 0 && n <= songs.len()=>n,
+    _=>{
+        println!("invalid input. please enter a numbeer between 1 and {}",songs.len());
+        return;
     }
-    Err(msg) => println!("خطأ: {}", msg),
+};
+
+let song = songs[index - 1].clone();
+
+// شغّل الأغنية واحصل على sink
+let (sink, _stream) = play_song(song).unwrap();
+let sink_clone = Arc::clone(&sink);
+
+// thread يشغل الأغنية
+std::thread::spawn(move || {
+    sink_clone.lock().unwrap().sleep_until_end();
+});
+
+// loop يتحكم
+loop {
+    let mut cmd = String::new();
+    std::io::stdin().read_line(&mut cmd).unwrap();
+    match cmd.trim() {
+        "p" => sink.lock().unwrap().pause(),
+        "r" => sink.lock().unwrap().play(),
+        "q" => {println!("Bye!");break},
+        _   => println!("أمر غير معروف"),
+    }
 }
+ 
 }
  
 
