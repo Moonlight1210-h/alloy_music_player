@@ -16,6 +16,13 @@ pub enum PlayerState {
     Paused,
 }
 
+// الـ Enum الجديد الخاص بالثيمات
+#[derive(PartialEq, Clone, Copy)]
+pub enum ThemeMode {
+    Dark,
+    Light,
+}
+
 pub struct App {
     pub screen: Screen,
     pub songs: Vec<Song>,
@@ -30,6 +37,9 @@ pub struct App {
     pub volume_input_buf: String,
     pub status_msg: String,
     pub status_until: Option<Instant>,
+    pub current_pos: Duration,
+    pub current_duration: Duration, // مدة الأغنية الإجمالية
+    pub theme: ThemeMode,           // الوضع الحالي (داكن أو فاتح)
 }
 
 impl App {
@@ -52,6 +62,9 @@ impl App {
             volume_input_buf: String::new(),
             status_msg: String::new(),
             status_until: None,
+            current_pos: Duration::from_secs(0),
+            current_duration: Duration::from_secs(0),
+            theme: ThemeMode::Dark, // الافتراضي دارك مود
         }
     }
 
@@ -63,15 +76,17 @@ impl App {
         let idx = self.selected_index();
         let song = self.songs[idx].clone();
         self.current_title = song.title.clone();
+        self.current_pos = Duration::from_secs(0);
 
-        match play_song(song) {
-            Ok((sink, stream)) => {
+        match play_song(song, Duration::from_secs(0)) {
+            Ok((sink, stream, total_dur)) => {
                 {
                     let s = sink.lock().unwrap();
                     s.set_volume(self.volume);
                 }
                 self.sink = Some(sink);
                 self._stream = Some(stream);
+                self.current_duration = total_dur; // حفظ المدة الإجمالية
                 self.player_state = PlayerState::Playing;
                 self.screen = Screen::Player;
                 self.set_status("▶  Now Playing");
@@ -101,6 +116,17 @@ impl App {
         }
     }
 
+    // دالة التبديل بين الدارك واللايت مود
+    pub fn toggle_theme(&mut self) {
+        if self.theme == ThemeMode::Dark {
+            self.theme = ThemeMode::Light;
+            self.set_status("☀️  Light Mode Enabled");
+        } else {
+            self.theme = ThemeMode::Dark;
+            self.set_status("🌙  Dark Mode Enabled");
+        }
+    }
+
     fn apply_volume(&mut self) {
         if let Some(ref sink) = self.sink {
             sink.lock().unwrap().set_volume(self.volume);
@@ -126,6 +152,17 @@ impl App {
 
     pub fn tick(&mut self) {
         self.wave_tick = self.wave_tick.wrapping_add(1);
+
+        if self.player_state == PlayerState::Playing {
+            self.current_pos += Duration::from_millis(80);
+            
+            // حماية اختيارية: لو الوقت الحالي تخطى الإجمالي، نوقفه
+            if self.current_duration > Duration::from_secs(0) && self.current_pos >= self.current_duration {
+                self.current_pos = self.current_duration;
+                self.player_state = PlayerState::Paused;
+            }
+        }
+
         if let Some(until) = self.status_until {
             if Instant::now() > until {
                 self.status_msg.clear();
@@ -159,5 +196,52 @@ impl App {
         let cur = self.selected_index();
         let prev = if cur == 0 { len - 1 } else { cur - 1 };
         self.list_state.select(Some(prev));
+    }
+
+    fn seek_to(&mut self, new_pos: Duration) {
+        // حماية لكي لا نقدم أبعد من نهاية الأغنية
+        let mut target_pos = new_pos;
+        if self.current_duration > Duration::from_secs(0) && target_pos > self.current_duration {
+            target_pos = self.current_duration;
+        }
+
+        let idx = self.selected_index();
+        let song = self.songs[idx].clone();
+
+        self.sink = None;
+        self._stream = None;
+
+        match play_song(song, target_pos) {
+            Ok((sink, stream, _)) => {
+                {
+                    let s = sink.lock().unwrap();
+                    s.set_volume(self.volume);
+                    if self.player_state == PlayerState::Paused {
+                        s.pause();
+                    }
+                }
+                self.sink = Some(sink);
+                self._stream = Some(stream);
+                self.current_pos = target_pos;
+                self.set_status(&format!("🎯 Seeked to {}:{:02}", target_pos.as_secs() / 60, target_pos.as_secs() % 60));
+            }
+            Err(e) => {
+                self.set_status(&format!("Error seeking: {}", e));
+            }
+        }
+    }
+
+    pub fn seek_forward(&mut self) {
+        if self.sink.is_some() {
+            let new_pos = self.current_pos + Duration::from_secs(5);
+            self.seek_to(new_pos);
+        }
+    }
+
+    pub fn seek_backward(&mut self) {
+        if self.sink.is_some() {
+            let new_pos = self.current_pos.saturating_sub(Duration::from_secs(5));
+            self.seek_to(new_pos);
+        }
     }
 }
